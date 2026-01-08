@@ -9,13 +9,16 @@ export const ThemeToggle: React.FC<Props> = ({ theme, toggleTheme }) => (
   <button
     onClick={toggleTheme}
     style={{
-      background: theme === "dark" ? "#f97316" : "#0f4c81",
-      color: "white",
+      background: "transparent",
+      color: "inherit", // Herda a cor do texto do Card
+      border: "1px solid currentColor",
       padding: "6px 12px",
       borderRadius: "6px",
       marginBottom: "10px",
+      fontSize: "0.9rem",
+      opacity: 0.8
     }}
   >
-    {theme === "dark" ? "Modo Claro" : "Modo Escuro"}
+    {theme === "dark" ? "☀️ Modo Claro" : "jm Modo Escuro"}
   </button>
 );

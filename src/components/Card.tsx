@@ -18,7 +18,15 @@ export const Card: React.FC<Props> = ({ children }) => (
       textAlign: "center",
     }}
   >
-    <img src={logo} alt="Logo Empresarial" style={{ width: "80px", marginBottom: "20px" }} />
+    <img 
+      src={logo} 
+      alt="Logo Empresarial" 
+      style={{ 
+        width: "150px", // Aumentado para melhor proporção
+        display: "block",
+        margin: "0 auto 20px" 
+      }} 
+    />
     {children}
   </div>
 );

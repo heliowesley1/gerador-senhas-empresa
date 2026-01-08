@@ -1,0 +1,22 @@
+:root {
+  --blue: #0f4c81;
+  --blue-dark: #0b3a63;
+  --orange: #f97316;
+  --gray: #e5e7eb;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: linear-gradient(135deg, var(--blue), var(--blue-dark));
+  color: white;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+}

@@ -3,10 +3,28 @@ import { Card } from "./components/Card";
 import { Controls } from "./components/Controls";
 import { Output } from "./components/Output";
 
-function gerarSenha(tamanho: number, usarNumeros: boolean, usarSimbolos: boolean) {
-  let caracteres = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+function gerarSenha(
+  tamanho: number, 
+  usarNumeros: boolean, 
+  usarSimbolos: boolean, 
+  apenasMaiusculas: boolean, 
+  apenasMinusculas: boolean
+) {
+  let caracteres = "";
+  
+  // Lógica para definir o conjunto de letras
+  if (apenasMaiusculas) {
+    caracteres = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  } else if (apenasMinusculas) {
+    caracteres = "abcdefghijklmnopqrstuvwxyz";
+  } else {
+    // Se nenhuma (ou ambas) estiverem marcadas, usa misto (comportamento padrão)
+    caracteres = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  }
+
   if (usarNumeros) caracteres += "0123456789";
   if (usarSimbolos) caracteres += "!@#$%^&*()_+-=[]{}<>?";
+  
   let senha = "";
   for (let i = 0; i < tamanho; i++) {
     senha += caracteres[Math.floor(Math.random() * caracteres.length)];
@@ -18,30 +36,47 @@ function App() {
   const [tamanho, setTamanho] = useState(12);
   const [numeros, setNumeros] = useState(true);
   const [simbolos, setSimbolos] = useState(true);
+  
+  // Novos estados para controle de caixa (case)
+  const [apenasMaiusculas, setApenasMaiusculas] = useState(false);
+  const [apenasMinusculas, setApenasMinusculas] = useState(false);
+  
   const [senha, setSenha] = useState("");
-  const [copiado, setCopiado] = useState(false); // Novo estado para feedback visual
+  const [copiado, setCopiado] = useState(false);
 
-  const gerar = () => {
-    const nova = gerarSenha(tamanho, numeros, simbolos);
-    setSenha(nova);
-    setCopiado(false); // Reseta a mensagem se gerar nova senha
+  // Garante que "Apenas Maiúsculas" e "Apenas Minúsculas" não fiquem marcados juntos
+  const toggleMaiusculas = () => {
+    const novoValor = !apenasMaiusculas;
+    setApenasMaiusculas(novoValor);
+    if (novoValor) setApenasMinusculas(false);
   };
 
+  const toggleMinusculas = () => {
+    const novoValor = !apenasMinusculas;
+    setApenasMinusculas(novoValor);
+    if (novoValor) setApenasMaiusculas(false);
+  };
+
+  const gerar = () => {
+    const nova = gerarSenha(tamanho, numeros, simbolos, apenasMaiusculas, apenasMinusculas);
+    setSenha(nova);
+    setCopiado(false);
+  };
+
+  // Atualiza ao carregar
   useEffect(() => {
     gerar();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Atualiza ao mudar qualquer controle
   useEffect(() => {
     gerar();
-  }, [tamanho, numeros, simbolos]);
+  }, [tamanho, numeros, simbolos, apenasMaiusculas, apenasMinusculas]);
 
   const copiar = () => {
     navigator.clipboard.writeText(senha);
-    // Removemos o alert e ativamos o estado visual
     setCopiado(true);
-    
-    // Faz a mensagem sumir após 2 segundos
     setTimeout(() => {
       setCopiado(false);
     }, 2000);
@@ -60,7 +95,6 @@ function App() {
       <Card>
         <h1 style={{ color: "#0f4c81", marginTop: 0, marginBottom: "20px" }}>Gerador de Senhas</h1>
         
-        {/* Passamos o estado 'copiado' para o componente Output */}
         <Output senha={senha} copiar={copiar} copiado={copiado} />
         
         <Controls
@@ -70,6 +104,10 @@ function App() {
           setNumeros={setNumeros}
           simbolos={simbolos}
           setSimbolos={setSimbolos}
+          apenasMaiusculas={apenasMaiusculas}
+          toggleMaiusculas={toggleMaiusculas}
+          apenasMinusculas={apenasMinusculas}
+          toggleMinusculas={toggleMinusculas}
         />
         
         <button
@@ -82,7 +120,7 @@ function App() {
             fontSize: "16px",
             fontWeight: "bold",
             width: "100%",
-            marginTop: "15px",
+            marginTop: "20px",
             border: "none",
             cursor: "pointer",
             transition: "background 0.2s"

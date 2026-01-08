@@ -1,130 +1,95 @@
 import { useState } from "react";
+import { Card } from "./components/Card";
+import { Controls } from "./components/Controls";
+import { Output } from "./components/Output";
+import { PasswordStrength } from "./components/PasswordStrength";
+import { ThemeToggle } from "./components/ThemeToggle";
+import { useLocalStorage } from "./hooks/useLocalStorage";
 
 function gerarSenha(tamanho: number, usarNumeros: boolean, usarSimbolos: boolean) {
   let caracteres = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
   if (usarNumeros) caracteres += "0123456789";
   if (usarSimbolos) caracteres += "!@#$%^&*()_+-=[]{}<>?";
-
   let senha = "";
   for (let i = 0; i < tamanho; i++) {
-    const index = Math.floor(Math.random() * caracteres.length);
-    senha += caracteres[index];
+    senha += caracteres[Math.floor(Math.random() * caracteres.length)];
   }
-
   return senha;
 }
 
 function App() {
-  const [tamanho, setTamanho] = useState<number>(12);
-  const [numeros, setNumeros] = useState<boolean>(true);
-  const [simbolos, setSimbolos] = useState<boolean>(true);
-  const [senha, setSenha] = useState<string>("");
+  const [tamanho, setTamanho] = useState(12);
+  const [numeros, setNumeros] = useState(true);
+  const [simbolos, setSimbolos] = useState(true);
+  const [senha, setSenha] = useState("");
+  const [theme, setTheme] = useState<"light" | "dark">("dark");
+  const [historico, setHistorico] = useLocalStorage<string[]>("historicoSenhas", []);
+
+  const gerar = () => {
+    const nova = gerarSenha(tamanho, numeros, simbolos);
+    setSenha(nova);
+    setHistorico([nova, ...historico].slice(0, 10)); // manter últimos 10
+  };
+
+  const copiar = () => {
+    navigator.clipboard.writeText(senha);
+    alert("Senha copiada para o clipboard!");
+  };
+
+  const toggleTheme = () => setTheme(theme === "dark" ? "light" : "dark");
 
   return (
-    <div style={styles.container}>
-      <div style={styles.card}>
-        <h1 style={styles.title}>Gerador de Senhas Empresarial</h1>
-        <p style={styles.subtitle}>
-          Gere senhas seguras para seus sistemas corporativos
-        </p>
-
-        <div style={styles.output}>
-          {senha || "Clique em gerar senha"}
-        </div>
-
-        <div style={styles.controls}>
-          <label>
-            Tamanho: <strong>{tamanho}</strong>
-          </label>
-          <input
-            type="range"
-            min={8}
-            max={32}
-            value={tamanho}
-            onChange={(e) => setTamanho(Number(e.target.value))}
-          />
-
-          <label>
-            <input
-              type="checkbox"
-              checked={numeros}
-              onChange={() => setNumeros(!numeros)}
-            />
-            Usar números
-          </label>
-
-          <label>
-            <input
-              type="checkbox"
-              checked={simbolos}
-              onChange={() => setSimbolos(!simbolos)}
-            />
-            Usar símbolos
-          </label>
-        </div>
-
+    <div
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        background: theme === "dark" ? "linear-gradient(135deg, #0f4c81, #0b3a63)" : "linear-gradient(135deg, #f97316, #fb923c)",
+        transition: "0.3s",
+      }}
+    >
+      <Card>
+        <ThemeToggle theme={theme} toggleTheme={toggleTheme} />
+        <h1 style={{ color: theme === "dark" ? "#0f4c81" : "#ffffff" }}>Gerador de Senhas</h1>
+        <Output senha={senha} copiar={copiar} />
+        <PasswordStrength senha={senha} />
+        <Controls
+          tamanho={tamanho}
+          setTamanho={setTamanho}
+          numeros={numeros}
+          setNumeros={setNumeros}
+          simbolos={simbolos}
+          setSimbolos={setSimbolos}
+        />
         <button
-          style={styles.button}
-          onClick={() => setSenha(gerarSenha(tamanho, numeros, simbolos))}
+          onClick={gerar}
+          style={{
+            background: theme === "dark" ? "#f97316" : "#0f4c81",
+            color: "white",
+            padding: "12px",
+            borderRadius: "8px",
+            fontSize: "16px",
+            fontWeight: "bold",
+            width: "100%",
+          }}
         >
           🔐 Gerar Senha
         </button>
-      </div>
+
+        {historico.length > 0 && (
+          <div style={{ marginTop: "20px", textAlign: "left" }}>
+            <h3>Histórico</h3>
+            <ul>
+              {historico.map((s, i) => (
+                <li key={i} style={{ fontFamily: "monospace" }}>{s}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </Card>
     </div>
   );
 }
-
-const styles: Record<string, React.CSSProperties> = {
-  container: {
-    minHeight: "100vh",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  card: {
-    background: "white",
-    color: "#020617",
-    padding: "32px",
-    borderRadius: "12px",
-    width: "100%",
-    maxWidth: "420px",
-    boxShadow: "0 20px 40px rgba(0,0,0,0.25)",
-  },
-  title: {
-    marginBottom: "4px",
-    color: "#0f4c81",
-  },
-  subtitle: {
-    marginBottom: "20px",
-    color: "#475569",
-    fontSize: "14px",
-  },
-  output: {
-    background: "#f1f5f9",
-    padding: "12px",
-    borderRadius: "8px",
-    textAlign: "center",
-    fontWeight: "bold",
-    letterSpacing: "1px",
-    marginBottom: "20px",
-    wordBreak: "break-all",
-  },
-  controls: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "10px",
-    marginBottom: "20px",
-    fontSize: "14px",
-  },
-  button: {
-    background: "#f97316",
-    color: "white",
-    padding: "12px",
-    borderRadius: "8px",
-    fontSize: "16px",
-    fontWeight: "bold",
-  },
-};
 
 export default App;
